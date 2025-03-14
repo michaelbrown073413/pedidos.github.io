@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wigwam Burger - Tienda</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+            user-select: none; 
+        }
+        img {
+            pointer-events: none;
+        }
+        body {
+            background-color: #111;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .logo {
+            width: 200px;
+            margin-bottom: 20px;
+        }
+        .panel {
+            background-color: #222;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            width: 80%;
+            max-width: 600px;
+            box-shadow: 0 0 10px rgba(255, 165, 0, 0.5);
+        }
+        button {
+            background-color: #ff9900;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 16px;
+            border-radius: 5px;
+            margin-top: 10px;
+            transition: 0.3s;
+        }
+        button:hover {
+            background-color: #ff7700;
+        }
+        .catalogo, .carrito, .pedido {
+            display: none;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            width: 80%;
+            max-width: 800px;
+            margin-top: 20px;
+        }
+        .producto {
+            background: #333;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+            width: 30%;
+            margin-bottom: 10px;
+        }
+        .producto img {
+            width: 100%;
+            border-radius: 5px;
+        }
+        .carrito {
+            position: fixed;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #444;
+            padding: 10px;
+            border-radius: 5px;
+            width: 200px;
+        }
+        .pedido {
+            flex-direction: column;
+            text-align: center;
+            background: #222;
+            padding: 20px;
+            border-radius: 10px;
+            width: 50%;
+        }
+    </style>
+</head>
+<body>
+    <img src="https://r2.fivemanage.com/O5yfhtPtAV4DBIWUnbt2S/image/Logo_Wigwam_Burger.png" class="logo" alt="Wigwam Burger">
+    
+    <div class="panel" id="inicio">
+        <h2>Si quieres realizar una compra, solo tienes que dar en el botón de debajo</h2>
+        <button onclick="mostrarCatalogo()">Hacer Compra</button>
+    </div>
+
+    <div class="catalogo" id="catalogo"></div>
+
+    <div class="carrito" id="carrito">
+        <h3>Carrito</h3>
+        <div id="lista-carrito"></div>
+        <button onclick="mostrarPedido()">Hacer Pedido</button>
+    </div>
+
+    <div class="pedido" id="pedido">
+        <h3>Detalles de Envío</h3>
+        <input type="text" id="nombre" placeholder="Tu Nombre">
+        <input type="text" id="direccion" placeholder="Tu Dirección">
+        <button onclick="enviarPedido()">Confirmar</button>
+    </div>
+
+    <script>
+        const productos = [
+            { id: 1, nombre: "Hamburguesa XXL", imagen: "https://r2.fivemanage.com/O5yfhtPtAV4DBIWUnbt2S/image/xxl.png", precio: 15 },
+            { id: 2, nombre: "Hamburguesa de Ternera", imagen: "https://r2.fivemanage.com/O5yfhtPtAV4DBIWUnbt2S/image/ternera.png", precio: 15 },
+            { id: 3, nombre: "Perrito Caliente", imagen: "https://r2.fivemanage.com/O5yfhtPtAV4DBIWUnbt2S/image/perrito.png", precio: 15 },
+            { id: 4, nombre: "Batido de Fresa", imagen: "https://r2.fivemanage.com/O5yfhtPtAV4DBIWUnbt2S/image/Batido_de_fresa.png", precio: 15 },
+            { id: 5, nombre: "Refresco de Limon", imagen: "https://r2.fivemanage.com/O5yfhtPtAV4DBIWUnbt2S/image/limonada.png", precio: 15 },
+            { id: 6, nombre: "Gaseosa", imagen: "https://r2.fivemanage.com/O5yfhtPtAV4DBIWUnbt2S/image/Gaseosa.png", precio: 15 }
+        ];
+
+        let carrito = [];
+
+        function mostrarCatalogo() {
+            document.getElementById("inicio").style.display = "none";
+            const catalogo = document.getElementById("catalogo");
+            catalogo.innerHTML = "";
+            productos.forEach(prod => {
+                catalogo.innerHTML += `
+                    <div class="producto">
+                        <img src="${prod.imagen}" alt="${prod.nombre}">
+                        <h4>${prod.nombre}</h4>
+                        <p>$${prod.precio}</p>
+                        <input type="number" id="cantidad-${prod.id}" value="1" min="1">
+                        <button onclick="agregarAlCarrito(${prod.id})">Agregar</button>
+                    </div>
+                `;
+            });
+            catalogo.style.display = "flex";
+        }
+
+        function agregarAlCarrito(id) {
+            const cantidad = document.getElementById(`cantidad-${id}`).value;
+            const producto = productos.find(prod => prod.id === id);
+            carrito.push({ ...producto, cantidad });
+            actualizarCarrito();
+        }
+
+        function actualizarCarrito() {
+            const listaCarrito = document.getElementById("lista-carrito");
+            listaCarrito.innerHTML = "";
+            carrito.forEach((item, index) => {
+                listaCarrito.innerHTML += `<p>${item.nombre} x${item.cantidad} <button onclick="eliminarDelCarrito(${index})">❌</button></p>`;
+            });
+            document.getElementById("carrito").style.display = "block";
+        }
+
+        function eliminarDelCarrito(index) {
+            carrito.splice(index, 1);
+            actualizarCarrito();
+        }
+
+        function mostrarPedido() {
+            document.getElementById("pedido").style.display = "flex";
+        }
+
+        function enviarPedido() {
+            const nombre = document.getElementById("nombre").value;
+            const direccion = document.getElementById("direccion").value;
+            if (!nombre || !direccion) {
+                alert("Por favor, completa los datos de envío.");
+                return;
+            }
+
+            let mensaje = `<@&1334330406568464404> <@&1332730297745281076>\n**Nuevo Pedido**\n**Nombre:** ${nombre}\n**Dirección:** ${direccion}\n**Productos:**\n`;
+            carrito.forEach(item => {
+                mensaje += `- ${item.nombre} x${item.cantidad} ($${item.precio * item.cantidad})\n`;
+            });
+
+            fetch("https://discord.com/api/webhooks/1350111371978735677/E4ZEktR-kDzc6TH0mXEnFzpgsVt1yRW0LjNuUzZEpRclVm4xE3zLoVSkQZTfbaBlgjcj", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ content: mensaje })
+            }).then(() => {
+                alert("Pedido enviado con éxito.");
+                carrito = [];
+                actualizarCarrito();
+                document.getElementById("pedido").style.display = "none";
+            });
+        }
+    </script>
+</body>
+</html>
