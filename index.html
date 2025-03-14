@@ -177,7 +177,7 @@
                 return;
             }
 
-            let mensaje = `<@&1334330406568464404> <@&1332730297745281076>\n**Nuevo Pedido**\n**Nombre:** ${nombre}\n**Dirección:** ${direccion}\n**Productos:**\n`;
+            let mensaje = `<@&1334330406568464404> <@&1332730297745281076>\n**Nuevo Pedido**\n**Nombre:** ${nombre}\n**Dirección:** ** ${direccion} **\n**Productos:**\n`;
             carrito.forEach(item => {
                 mensaje += `- ${item.nombre} x${item.cantidad} ($${item.precio * item.cantidad})\n`;
             });
