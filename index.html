@@ -208,14 +208,14 @@
             transform: translateY(-2px);
         }
 
-        #realizar-pedido {
+        #confirmar-pedido {
             background-color: #00cc00;
             width: 100%;
             padding: 12px;
             margin-top: 20px;
         }
 
-        #realizar-pedido:hover {
+        #confirmar-pedido:hover {
             background-color: #00b300;
         }
 
@@ -268,16 +268,11 @@
             }
 
             .modal {
-                display: none !important; /* Ocultar modal en móviles */
+                display: none !important;
             }
 
             #formulario-entrega {
-                display: none;
                 margin-top: 20px;
-            }
-
-            #formulario-entrega.active {
-                display: block;
             }
         }
 
@@ -383,7 +378,6 @@
             <p>Subtotal: $<span id="subtotal">0.00</span></p>
             <p>Descuento: $<span id="descuento">0.00</span></p>
             <p>Total: $<span id="total">0.00</span></p>
-            <button id="realizar-pedido" onclick="mostrarFormulario()">Realizar Pedido</button>
             <div id="formulario-entrega">
                 <h2>Detalles de Entrega</h2>
                 <div class="form-group">
@@ -402,8 +396,7 @@
                     <label for="nota">Nota (opcional):</label>
                     <textarea id="nota" rows="3"></textarea>
                 </div>
-                <button onclick="enviarPedido()">Confirmar Pedido</button>
-                <button onclick="cerrarFormulario()" style="background-color: #666; margin-left: 10px;">Cancelar</button>
+                <button id="confirmar-pedido" onclick="enviarPedido()">Confirmar Pedido</button>
             </div>
         </div>
 
@@ -411,22 +404,22 @@
             <div class="modal-content">
                 <h2>Detalles de Entrega</h2>
                 <div class="form-group">
-                    <label for="nombre">Nombre:</label>
-                    <input type="text" id="nombre" required>
+                    <label for="nombre-modal">Nombre:</label>
+                    <input type="text" id="nombre-modal" required>
                 </div>
                 <div class="form-group">
-                    <label for="direccion">Dirección de Entrega:</label>
-                    <input type="text" id="direccion" required>
+                    <label for="direccion-modal">Dirección de Entrega:</label>
+                    <input type="text" id="direccion-modal" required>
                 </div>
                 <div class="form-group">
-                    <label for="telefono">Teléfono (opcional):</label>
-                    <input type="tel" id="telefono">
+                    <label for="telefono-modal">Teléfono (opcional):</label>
+                    <input type="tel" id="telefono-modal">
                 </div>
                 <div class="form-group">
-                    <label for="nota">Nota (opcional):</label>
-                    <textarea id="nota" rows="3"></textarea>
+                    <label for="nota-modal">Nota (opcional):</label>
+                    <textarea id="nota-modal" rows="3"></textarea>
                 </div>
-                <button onclick="enviarPedido()">Confirmar Pedido</button>
+                <button onclick="enviarPedidoDesdeModal()">Confirmar Pedido</button>
                 <button onclick="cerrarModal()" style="background-color: #666; margin-left: 10px;">Cancelar</button>
             </div>
         </div>
@@ -437,11 +430,12 @@
         const webhookUrlPedido = 'https://discord.com/api/webhooks/1340438328872407144/8rzawWcU3QmRfSAqFB9rcNz-WbBu0Oxp3hy5V4iCFdkI8meQAJzq7waYK0Vd6yH2etjD';
         const webhookUrlFactura = 'https://discord.com/api/webhooks/1350600154507382905/AsBtpWVUMkcAnCTQQ7WDb7GavKmig33Wsho8Tccjhtp-B9P6C4pS8XY1tVPh7g330jkT';
         let descuentoAplicado = 0;
-        let codigoActivo = false;
-        const CODIGO_DESCUENTO = '5567243';
+        let codigoActivo = null;
+        const CODIGO_DESCUENTO_10 = '5567243'; // 10% descuento
+        const CODIGO_DESCUENTO_5 = '9867512';  // 5% descuento
 
         function agregarAlCarrito(nombre, precio, inputId) {
-            const cantidad = parseInt(document.getElementById(inputId).value);
+            const cantidad = parseInt(document.getElementById(inputId).value) || 1; // Valor por defecto 1 si es inválido
             if (cantidad <= 0) return;
 
             const itemExistente = carrito.find(item => item.nombre === nombre);
@@ -483,8 +477,12 @@
             });
 
             const subtotal = carrito.reduce((sum, item) => sum + (item.precio * item.cantidad), 0);
-            if (codigoActivo) {
-                descuentoAplicado = subtotal * 0.10;
+            if (codigoActivo === CODIGO_DESCUENTO_10) {
+                descuentoAplicado = subtotal * 0.10; // 10% descuento
+            } else if (codigoActivo === CODIGO_DESCUENTO_5) {
+                descuentoAplicado = subtotal * 0.05; // 5% descuento
+            } else {
+                descuentoAplicado = 0;
             }
             const total = subtotal - descuentoAplicado;
 
@@ -494,43 +492,28 @@
         }
 
         function aplicarDescuento() {
-            const codigo = document.getElementById('codigo-descuento').value;
+            const codigo = document.getElementById('codigo-descuento').value.trim();
             const subtotal = carrito.reduce((sum, item) => sum + (item.precio * item.cantidad), 0);
             
-            if (codigo === CODIGO_DESCUENTO) {
+            if (!subtotal) {
+                alert('El carrito está vacío. Añade productos antes de aplicar un descuento.');
+                return;
+            }
+
+            if (codigo === CODIGO_DESCUENTO_10) {
+                codigoActivo = CODIGO_DESCUENTO_10;
                 descuentoAplicado = subtotal * 0.10;
-                codigoActivo = true;
                 alert('¡Código aplicado! 10% de descuento');
+            } else if (codigo === CODIGO_DESCUENTO_5) {
+                codigoActivo = CODIGO_DESCUENTO_5;
+                descuentoAplicado = subtotal * 0.05;
+                alert('¡Código aplicado! 5% de descuento');
             } else {
+                codigoActivo = null;
                 descuentoAplicado = 0;
-                codigoActivo = false;
                 alert('Código inválido');
             }
             actualizarCarrito();
-        }
-
-        function mostrarFormulario() {
-            if (carrito.length === 0) {
-                alert('El carrito está vacío');
-                return;
-            }
-            if (window.innerWidth <= 768) {
-                // En móviles, mostrar formulario dentro del carrito
-                document.getElementById('formulario-entrega').classList.add('active');
-                document.getElementById('realizar-pedido').style.display = 'none';
-            } else {
-                // En escritorio, usar el modal
-                document.getElementById('modal').style.display = 'block';
-            }
-        }
-
-        function cerrarModal() {
-            document.getElementById('modal').style.display = 'none';
-        }
-
-        function cerrarFormulario() {
-            document.getElementById('formulario-entrega').classList.remove('active');
-            document.getElementById('realizar-pedido').style.display = 'block';
         }
 
         function toggleCarrito() {
@@ -538,14 +521,23 @@
             carritoPanel.classList.toggle('active');
         }
 
+        function cerrarModal() {
+            document.getElementById('modal').style.display = 'none';
+        }
+
         function enviarPedido() {
-            const nombre = document.getElementById('nombre').value;
-            const direccion = document.getElementById('direccion').value;
-            const telefono = document.getElementById('telefono').value;
-            const nota = document.getElementById('nota').value;
+            const nombre = document.getElementById('nombre').value.trim();
+            const direccion = document.getElementById('direccion').value.trim();
+            const telefono = document.getElementById('telefono').value.trim();
+            const nota = document.getElementById('nota').value.trim();
 
             if (!nombre || !direccion) {
-                alert('Por favor, completa los campos obligatorios');
+                alert('Por favor, completa los campos obligatorios (Nombre y Dirección)');
+                return;
+            }
+
+            if (carrito.length === 0) {
+                alert('El carrito está vacío');
                 return;
             }
 
@@ -574,7 +566,7 @@
                 mensajeFactura += `- ${item.nombre} (x${item.cantidad}): $${(item.precio * item.cantidad).toFixed(2)}\n`;
             });
             mensajeFactura += `\n**Subtotal:** $${subtotal.toFixed(2)}\n`;
-            mensajeFactura += `**Descuento (10%):** $${descuentoAplicado.toFixed(2)}\n`;
+            mensajeFactura += `**Descuento:** $${descuentoAplicado.toFixed(2)}\n`;
             mensajeFactura += `**Total a Pagar:** $${total.toFixed(2)}`;
 
             const enviarMensaje = (url, mensaje) => {
@@ -594,13 +586,8 @@
                         alert('Pedido realizado con éxito');
                         carrito = [];
                         descuentoAplicado = 0;
-                        codigoActivo = false;
+                        codigoActivo = null;
                         actualizarCarrito();
-                        if (window.innerWidth <= 768) {
-                            cerrarFormulario();
-                        } else {
-                            cerrarModal();
-                        }
                         document.getElementById('nombre').value = '';
                         document.getElementById('direccion').value = '';
                         document.getElementById('telefono').value = '';
@@ -608,12 +595,91 @@
                         document.getElementById('codigo-descuento').value = '';
                         toggleCarrito();
                     } else {
-                        alert('Error al realizar el pedido');
+                        throw new Error('Error en la respuesta del servidor');
                     }
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    alert('Error al realizar el pedido');
+                    alert('Error al realizar el pedido. Por favor, intenta de nuevo.');
+                });
+        }
+
+        function enviarPedidoDesdeModal() {
+            const nombre = document.getElementById('nombre-modal').value.trim();
+            const direccion = document.getElementById('direccion-modal').value.trim();
+            const telefono = document.getElementById('telefono-modal').value.trim();
+            const nota = document.getElementById('nota-modal').value.trim();
+
+            if (!nombre || !direccion) {
+                alert('Por favor, completa los campos obligatorios (Nombre y Dirección)');
+                return;
+            }
+
+            if (carrito.length === 0) {
+                alert('El carrito está vacío');
+                return;
+            }
+
+            const subtotal = carrito.reduce((sum, item) => sum + (item.precio * item.cantidad), 0);
+            const total = subtotal - descuentoAplicado;
+
+            let mensajePedido = '**Nuevo Pedido**\n\n';
+            mensajePedido += `**Cliente:** ${nombre}\n`;
+            mensajePedido += `**Dirección:** ${direccion}\n`;
+            if (telefono) mensajePedido += `**Teléfono:** ${telefono}\n`;
+            if (nota) mensajePedido += `**Nota:** ${nota}\n\n`;
+            mensajePedido += '**Productos:**\n';
+            carrito.forEach(item => {
+                mensajePedido += `- ${item.nombre} (x${item.cantidad}): $${(item.precio * item.cantidad).toFixed(2)}\n`;
+            });
+            mensajePedido += `\n**Subtotal:** $${subtotal.toFixed(2)}\n`;
+            mensajePedido += `**Descuento:** $${descuentoAplicado.toFixed(2)}\n`;
+            mensajePedido += `**Total:** $${total.toFixed(2)}\n`;
+            mensajePedido += `**Fecha:** ${new Date().toLocaleString()}`;
+
+            let mensajeFactura = '**Factura**\n\n';
+            mensajeFactura += `**Cliente:** ${nombre}\n`;
+            mensajeFactura += `**N° Pedido:** ${Date.now()}\n\n`;
+            mensajeFactura += '**Desglose:**\n';
+            carrito.forEach(item => {
+                mensajeFactura += `- ${item.nombre} (x${item.cantidad}): $${(item.precio * item.cantidad).toFixed(2)}\n`;
+            });
+            mensajeFactura += `\n**Subtotal:** $${subtotal.toFixed(2)}\n`;
+            mensajeFactura += `**Descuento:** $${descuentoAplicado.toFixed(2)}\n`;
+            mensajeFactura += `**Total a Pagar:** $${total.toFixed(2)}`;
+
+            const enviarMensaje = (url, mensaje) => {
+                return fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ content: mensaje })
+                });
+            };
+
+            Promise.all([
+                enviarMensaje(webhookUrlPedido, mensajePedido),
+                enviarMensaje(webhookUrlFactura, mensajeFactura)
+            ])
+                .then(responses => {
+                    if (responses.every(r => r.ok)) {
+                        alert('Pedido realizado con éxito');
+                        carrito = [];
+                        descuentoAplicado = 0;
+                        codigoActivo = null;
+                        actualizarCarrito();
+                        document.getElementById('nombre-modal').value = '';
+                        document.getElementById('direccion-modal').value = '';
+                        document.getElementById('telefono-modal').value = '';
+                        document.getElementById('nota-modal').value = '';
+                        document.getElementById('codigo-descuento').value = '';
+                        cerrarModal();
+                    } else {
+                        throw new Error('Error en la respuesta del servidor');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error al realizar el pedido. Por favor, intenta de nuevo.');
                 });
         }
     </script>
