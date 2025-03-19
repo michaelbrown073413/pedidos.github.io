@@ -427,15 +427,15 @@
 
     <script>
         let carrito = [];
-        const webhookUrlPedido = 'https://discord.com/api/webhooks/1340438328872407144/8rzawWcU3QmRfSAqFB9rcNz-WbBu0Oxp3hy5V4iCFdkI8meQAJzq7waYK0Vd6yH2etjD';
-        const webhookUrlFactura = 'https://discord.com/api/webhooks/1350600154507382905/AsBtpWVUMkcAnCTQQ7WDb7GavKmig33Wsho8Tccjhtp-B9P6C4pS8XY1tVPh7g330jkT';
+        const webhookUrlPedido = 'https://discord.com/api/webhooks/1350111371978735677/E4ZEktR-kDzc6TH0mXEnFzpgsVt1yRW0LjNuUzZEpRclVm4xE3zLoVSkQZTfbaBlgjcj';
+        const webhookUrlFactura = 'https://discord.com/api/webhooks/1351919851148677241/ZWL0eQB4QEGOYfoCOiFX5tfpDnVi7QZdI8zCeIJyfVeYJsvMvbsYdcj6RKQ_soy3RrD7';
         let descuentoAplicado = 0;
         let codigoActivo = null;
         const CODIGO_DESCUENTO_10 = '5567243'; // 10% descuento
         const CODIGO_DESCUENTO_5 = '9867512';  // 5% descuento
 
         function agregarAlCarrito(nombre, precio, inputId) {
-            const cantidad = parseInt(document.getElementById(inputId).value) || 1; // Valor por defecto 1 si es inválido
+            const cantidad = parseInt(document.getElementById(inputId).value) || 1;
             if (cantidad <= 0) return;
 
             const itemExistente = carrito.find(item => item.nombre === nombre);
@@ -478,9 +478,9 @@
 
             const subtotal = carrito.reduce((sum, item) => sum + (item.precio * item.cantidad), 0);
             if (codigoActivo === CODIGO_DESCUENTO_10) {
-                descuentoAplicado = subtotal * 0.10; // 10% descuento
+                descuentoAplicado = subtotal * 0.10;
             } else if (codigoActivo === CODIGO_DESCUENTO_5) {
-                descuentoAplicado = subtotal * 0.05; // 5% descuento
+                descuentoAplicado = subtotal * 0.05;
             } else {
                 descuentoAplicado = 0;
             }
@@ -543,43 +543,55 @@
 
             const subtotal = carrito.reduce((sum, item) => sum + (item.precio * item.cantidad), 0);
             const total = subtotal - descuentoAplicado;
+            const fecha = new Date().toLocaleString();
 
-            let mensajePedido = '**Nuevo Pedido**\n\n';
-            mensajePedido += `**Cliente:** ${nombre}\n`;
-            mensajePedido += `**Dirección:** ${direccion}\n`;
-            if (telefono) mensajePedido += `**Teléfono:** ${telefono}\n`;
-            if (nota) mensajePedido += `**Nota:** ${nota}\n\n`;
-            mensajePedido += '**Productos:**\n';
-            carrito.forEach(item => {
-                mensajePedido += `- ${item.nombre} (x${item.cantidad}): $${(item.precio * item.cantidad).toFixed(2)}\n`;
-            });
-            mensajePedido += `\n**Subtotal:** $${subtotal.toFixed(2)}\n`;
-            mensajePedido += `**Descuento:** $${descuentoAplicado.toFixed(2)}\n`;
-            mensajePedido += `**Total:** $${total.toFixed(2)}\n`;
-            mensajePedido += `**Fecha:** ${new Date().toLocaleString()}`;
+            const embedPedido = {
+                embeds: [{
+                    title: "🍔 Nuevo Pedido",
+                    color: 0xFFD700, // Amarillo (color del tema)
+                    fields: [
+                        { name: "👤 Cliente", value: nombre, inline: true },
+                        { name: "📍 Dirección", value: direccion, inline: true },
+                        { name: "📞 Teléfono", value: telefono || "No proporcionado", inline: true },
+                        { name: "📝 Nota", value: nota || "Sin nota", inline: false },
+                        { name: "🛒 Productos", value: carrito.map(item => `${item.nombre} (x${item.cantidad}) - $${(item.precio * item.cantidad).toFixed(2)}`).join('\n'), inline: false },
+                        { name: "💰 Subtotal", value: `$${subtotal.toFixed(2)}`, inline: true },
+                        { name: "🎁 Descuento", value: `$${descuentoAplicado.toFixed(2)}`, inline: true },
+                        { name: "💵 Total", value: `$${total.toFixed(2)}`, inline: true }
+                    ],
+                    timestamp: new Date(),
+                    footer: { text: "Wigwam Burger" }
+                }]
+            };
 
-            let mensajeFactura = '**Factura**\n\n';
-            mensajeFactura += `**Cliente:** ${nombre}\n`;
-            mensajeFactura += `**N° Pedido:** ${Date.now()}\n\n`;
-            mensajeFactura += '**Desglose:**\n';
-            carrito.forEach(item => {
-                mensajeFactura += `- ${item.nombre} (x${item.cantidad}): $${(item.precio * item.cantidad).toFixed(2)}\n`;
-            });
-            mensajeFactura += `\n**Subtotal:** $${subtotal.toFixed(2)}\n`;
-            mensajeFactura += `**Descuento:** $${descuentoAplicado.toFixed(2)}\n`;
-            mensajeFactura += `**Total a Pagar:** $${total.toFixed(2)}`;
+            const embedFactura = {
+                embeds: [{
+                    title: "📄 Factura",
+                    color: 0x00CC00, // Verde
+                    fields: [
+                        { name: "👤 Cliente", value: nombre, inline: true },
+                        { name: "🆔 N° Pedido", value: `${Date.now()}`, inline: true },
+                        { name: "🛒 Desglose", value: carrito.map(item => `${item.nombre} (x${item.cantidad}) - $${(item.precio * item.cantidad).toFixed(2)}`).join('\n'), inline: false },
+                        { name: "💰 Subtotal", value: `$${subtotal.toFixed(2)}`, inline: true },
+                        { name: "🎁 Descuento", value: `$${descuentoAplicado.toFixed(2)}`, inline: true },
+                        { name: "💵 Total a Pagar", value: `$${total.toFixed(2)}`, inline: true }
+                    ],
+                    timestamp: new Date(),
+                    footer: { text: "Wigwam Burger" }
+                }]
+            };
 
-            const enviarMensaje = (url, mensaje) => {
+            const enviarMensaje = (url, embed) => {
                 return fetch(url, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ content: mensaje })
+                    body: JSON.stringify(embed)
                 });
             };
 
             Promise.all([
-                enviarMensaje(webhookUrlPedido, mensajePedido),
-                enviarMensaje(webhookUrlFactura, mensajeFactura)
+                enviarMensaje(webhookUrlPedido, embedPedido),
+                enviarMensaje(webhookUrlFactura, embedFactura)
             ])
                 .then(responses => {
                     if (responses.every(r => r.ok)) {
@@ -622,43 +634,55 @@
 
             const subtotal = carrito.reduce((sum, item) => sum + (item.precio * item.cantidad), 0);
             const total = subtotal - descuentoAplicado;
+            const fecha = new Date().toLocaleString();
 
-            let mensajePedido = '**Nuevo Pedido**\n\n';
-            mensajePedido += `**Cliente:** ${nombre}\n`;
-            mensajePedido += `**Dirección:** ${direccion}\n`;
-            if (telefono) mensajePedido += `**Teléfono:** ${telefono}\n`;
-            if (nota) mensajePedido += `**Nota:** ${nota}\n\n`;
-            mensajePedido += '**Productos:**\n';
-            carrito.forEach(item => {
-                mensajePedido += `- ${item.nombre} (x${item.cantidad}): $${(item.precio * item.cantidad).toFixed(2)}\n`;
-            });
-            mensajePedido += `\n**Subtotal:** $${subtotal.toFixed(2)}\n`;
-            mensajePedido += `**Descuento:** $${descuentoAplicado.toFixed(2)}\n`;
-            mensajePedido += `**Total:** $${total.toFixed(2)}\n`;
-            mensajePedido += `**Fecha:** ${new Date().toLocaleString()}`;
+            const embedPedido = {
+                embeds: [{
+                    title: "🍔 Nuevo Pedido",
+                    color: 0xFFD700, // Amarillo
+                    fields: [
+                        { name: "👤 Cliente", value: nombre, inline: true },
+                        { name: "📍 Dirección", value: direccion, inline: true },
+                        { name: "📞 Teléfono", value: telefono || "No proporcionado", inline: true },
+                        { name: "📝 Nota", value: nota || "Sin nota", inline: false },
+                        { name: "🛒 Productos", value: carrito.map(item => `${item.nombre} (x${item.cantidad}) - $${(item.precio * item.cantidad).toFixed(2)}`).join('\n'), inline: false },
+                        { name: "💰 Subtotal", value: `$${subtotal.toFixed(2)}`, inline: true },
+                        { name: "🎁 Descuento", value: `$${descuentoAplicado.toFixed(2)}`, inline: true },
+                        { name: "💵 Total", value: `$${total.toFixed(2)}`, inline: true }
+                    ],
+                    timestamp: new Date(),
+                    footer: { text: "Wigwam Burger" }
+                }]
+            };
 
-            let mensajeFactura = '**Factura**\n\n';
-            mensajeFactura += `**Cliente:** ${nombre}\n`;
-            mensajeFactura += `**N° Pedido:** ${Date.now()}\n\n`;
-            mensajeFactura += '**Desglose:**\n';
-            carrito.forEach(item => {
-                mensajeFactura += `- ${item.nombre} (x${item.cantidad}): $${(item.precio * item.cantidad).toFixed(2)}\n`;
-            });
-            mensajeFactura += `\n**Subtotal:** $${subtotal.toFixed(2)}\n`;
-            mensajeFactura += `**Descuento:** $${descuentoAplicado.toFixed(2)}\n`;
-            mensajeFactura += `**Total a Pagar:** $${total.toFixed(2)}`;
+            const embedFactura = {
+                embeds: [{
+                    title: "📄 Factura",
+                    color: 0x00CC00, // Verde
+                    fields: [
+                        { name: "👤 Cliente", value: nombre, inline: true },
+                        { name: "🆔 N° Pedido", value: `${Date.now()}`, inline: true },
+                        { name: "🛒 Desglose", value: carrito.map(item => `${item.nombre} (x${item.cantidad}) - $${(item.precio * item.cantidad).toFixed(2)}`).join('\n'), inline: false },
+                        { name: "💰 Subtotal", value: `$${subtotal.toFixed(2)}`, inline: true },
+                        { name: "🎁 Descuento", value: `$${descuentoAplicado.toFixed(2)}`, inline: true },
+                        { name: "💵 Total a Pagar", value: `$${total.toFixed(2)}`, inline: true }
+                    ],
+                    timestamp: new Date(),
+                    footer: { text: "Wigwam Burger" }
+                }]
+            };
 
-            const enviarMensaje = (url, mensaje) => {
+            const enviarMensaje = (url, embed) => {
                 return fetch(url, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ content: mensaje })
+                    body: JSON.stringify(embed)
                 });
             };
 
             Promise.all([
-                enviarMensaje(webhookUrlPedido, mensajePedido),
-                enviarMensaje(webhookUrlFactura, mensajeFactura)
+                enviarMensaje(webhookUrlPedido, embedPedido),
+                enviarMensaje(webhookUrlFactura, embedFactura)
             ])
                 .then(responses => {
                     if (responses.every(r => r.ok)) {
