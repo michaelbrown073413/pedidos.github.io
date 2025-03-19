@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Wigwam Burger</title>
     <style>
         * {
@@ -229,7 +229,7 @@
                 -webkit-overflow-scrolling: touch;
                 gap: 0;
                 padding: 0;
-                height: calc(100vh - 100px); /* Ajusta según el header */
+                height: calc(100vh - 100px);
             }
 
             .producto {
@@ -267,9 +267,17 @@
                 height: 25px;
             }
 
-            .modal-content {
-                width: 90%;
-                margin: 10% auto;
+            .modal {
+                display: none !important; /* Ocultar modal en móviles */
+            }
+
+            #formulario-entrega {
+                display: none;
+                margin-top: 20px;
+            }
+
+            #formulario-entrega.active {
+                display: block;
             }
         }
 
@@ -376,6 +384,27 @@
             <p>Descuento: $<span id="descuento">0.00</span></p>
             <p>Total: $<span id="total">0.00</span></p>
             <button id="realizar-pedido" onclick="mostrarFormulario()">Realizar Pedido</button>
+            <div id="formulario-entrega">
+                <h2>Detalles de Entrega</h2>
+                <div class="form-group">
+                    <label for="nombre">Nombre:</label>
+                    <input type="text" id="nombre" required>
+                </div>
+                <div class="form-group">
+                    <label for="direccion">Dirección de Entrega:</label>
+                    <input type="text" id="direccion" required>
+                </div>
+                <div class="form-group">
+                    <label for="telefono">Teléfono (opcional):</label>
+                    <input type="tel" id="telefono">
+                </div>
+                <div class="form-group">
+                    <label for="nota">Nota (opcional):</label>
+                    <textarea id="nota" rows="3"></textarea>
+                </div>
+                <button onclick="enviarPedido()">Confirmar Pedido</button>
+                <button onclick="cerrarFormulario()" style="background-color: #666; margin-left: 10px;">Cancelar</button>
+            </div>
         </div>
 
         <div id="modal" class="modal">
@@ -485,11 +514,23 @@
                 alert('El carrito está vacío');
                 return;
             }
-            document.getElementById('modal').style.display = 'block';
+            if (window.innerWidth <= 768) {
+                // En móviles, mostrar formulario dentro del carrito
+                document.getElementById('formulario-entrega').classList.add('active');
+                document.getElementById('realizar-pedido').style.display = 'none';
+            } else {
+                // En escritorio, usar el modal
+                document.getElementById('modal').style.display = 'block';
+            }
         }
 
         function cerrarModal() {
             document.getElementById('modal').style.display = 'none';
+        }
+
+        function cerrarFormulario() {
+            document.getElementById('formulario-entrega').classList.remove('active');
+            document.getElementById('realizar-pedido').style.display = 'block';
         }
 
         function toggleCarrito() {
@@ -555,7 +596,11 @@
                         descuentoAplicado = 0;
                         codigoActivo = false;
                         actualizarCarrito();
-                        cerrarModal();
+                        if (window.innerWidth <= 768) {
+                            cerrarFormulario();
+                        } else {
+                            cerrarModal();
+                        }
                         document.getElementById('nombre').value = '';
                         document.getElementById('direccion').value = '';
                         document.getElementById('telefono').value = '';
