@@ -3,195 +3,573 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wigwam Burger - Tienda</title>
+    <title>Wigwam Burger</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Arial', sans-serif;
-            user-select: none; 
+            font-family: Arial, sans-serif;
+            user-select: none;
         }
-        img {
+
+        body {
+            background-color: #1a1a1a;
+            color: #fff;
+            line-height: 1.6;
+            transition: all 0.3s ease;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background-color: #ffd700;
+            padding: 20px;
+            text-align: center;
+            color: #1a1a1a;
+            animation: fadeIn 1s ease;
+        }
+
+        .logo img {
+            max-width: 200px;
+            height: auto;
+        }
+
+        .catalogo {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .producto {
+            background-color: #2d2d2d;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(255, 215, 0, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .producto:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(255, 215, 0, 0.4);
+        }
+
+        .producto img {
+            max-width: 100%;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 5px;
             pointer-events: none;
         }
-        body {
-            background-color: #111;
-            color: white;
+
+        .cantidad-selector {
+            margin: 10px 0;
             display: flex;
-            flex-direction: column;
-            align-items: center;
             justify-content: center;
-            min-height: 100vh;
-            padding: 20px;
+            gap: 10px;
+            align-items: center;
         }
-        .logo {
-            width: 200px;
-            margin-bottom: 20px;
-        }
-        .panel {
-            background-color: #222;
-            padding: 20px;
-            border-radius: 10px;
+
+        .cantidad-selector input {
+            width: 50px;
+            padding: 5px;
             text-align: center;
-            width: 80%;
-            max-width: 600px;
-            box-shadow: 0 0 10px rgba(255, 165, 0, 0.5);
+            background-color: #fff;
+            border: 1px solid #ffd700;
+            color: #1a1a1a;
+            border-radius: 4px;
         }
-        button {
-            background-color: #ff9900;
+
+        .cart-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #ffd700;
             border: none;
-            padding: 10px 20px;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
             cursor: pointer;
-            font-size: 16px;
-            border-radius: 5px;
-            margin-top: 10px;
-            transition: 0.3s;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease;
+            z-index: 1000;
         }
-        button:hover {
-            background-color: #ff7700;
+
+        .cart-button:hover {
+            transform: scale(1.1);
         }
-        .catalogo, .carrito, .pedido {
+
+        .cart-button.bounce {
+            animation: bounce 0.5s ease;
+        }
+
+        .cart-button img {
+            width: 30px;
+            height: 30px;
+        }
+
+        .carrito-panel {
+            position: fixed;
+            top: 0;
+            right: -400px;
+            width: 400px;
+            height: 100%;
+            background-color: #2d2d2d;
+            padding: 20px;
+            box-shadow: -2px 0 10px rgba(0, 0, 0, 0.5);
+            transition: right 0.3s ease;
+            z-index: 999;
+            overflow-y: auto;
+        }
+
+        .carrito-panel.active {
+            right: 0;
+        }
+
+        .carrito-panel h2 {
+            margin-bottom: 20px;
+            color: #ffd700;
+        }
+
+        .carrito-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 10px 0;
+            padding: 10px;
+            border-bottom: 1px solid #ffd700;
+            animation: slideInItem 0.3s ease;
+        }
+
+        .carrito-item button {
+            background-color: #ff4444;
+            padding: 5px 10px;
+            font-size: 0.8em;
+        }
+
+        .modal {
             display: none;
-            flex-wrap: wrap;
-            justify-content: space-around;
-            width: 80%;
-            max-width: 800px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.8);
+        }
+
+        .modal-content {
+            background-color: #2d2d2d;
+            margin: 15% auto;
+            padding: 20px;
+            width: 70%;
+            max-width: 500px;
+            border-radius: 8px;
+            border: 2px solid #ffd700;
+            animation: slideIn 0.3s ease;
+        }
+
+        .form-group {
+            margin: 15px 0;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #ffd700;
+        }
+
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ffd700;
+            border-radius: 4px;
+            background-color: #fff;
+            color: #1a1a1a;
+        }
+
+        button {
+            background-color: #ffd700;
+            color: #1a1a1a;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #e6c200;
+            transform: translateY(-2px);
+        }
+
+        #realizar-pedido {
+            background-color: #00cc00;
+            width: 100%;
+            padding: 12px;
             margin-top: 20px;
         }
-        .producto {
-            background: #333;
-            padding: 10px;
-            border-radius: 5px;
-            text-align: center;
-            width: 30%;
-            margin-bottom: 10px;
+
+        #realizar-pedido:hover {
+            background-color: #00b300;
         }
-        .producto img {
-            width: 100%;
-            border-radius: 5px;
+
+        /* Estilos para móviles */
+        @media (max-width: 768px) {
+            .catalogo {
+                display: flex;
+                flex-direction: row;
+                overflow-x: auto;
+                scroll-snap-type: x mandatory;
+                -webkit-overflow-scrolling: touch;
+                gap: 0;
+                padding: 0;
+                height: calc(100vh - 100px); /* Ajusta según el header */
+            }
+
+            .producto {
+                flex: 0 0 100%;
+                height: 100%;
+                scroll-snap-align: center;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                padding: 20px;
+                border-radius: 0;
+                box-shadow: none;
+            }
+
+            .producto img {
+                height: 200px;
+                margin-bottom: 15px;
+            }
+
+            .carrito-panel {
+                width: 100%;
+                right: -100%;
+            }
+
+            .cart-button {
+                bottom: 10px;
+                right: 10px;
+                width: 50px;
+                height: 50px;
+            }
+
+            .cart-button img {
+                width: 25px;
+                height: 25px;
+            }
+
+            .modal-content {
+                width: 90%;
+                margin: 10% auto;
+            }
         }
-        .carrito {
-            position: fixed;
-            right: 20px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: #444;
-            padding: 10px;
-            border-radius: 5px;
-            width: 200px;
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
-        .pedido {
-            flex-direction: column;
-            text-align: center;
-            background: #222;
-            padding: 20px;
-            border-radius: 10px;
-            width: 50%;
+
+        @keyframes slideIn {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes slideInItem {
+            from { transform: translateX(-20px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes bounce {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
         }
     </style>
 </head>
-<body>
-    <img src="https://r2.fivemanage.com/O5yfhtPtAV4DBIWUnbt2S/image/Logo_Wigwam_Burger.png" class="logo" alt="Wigwam Burger">
-    
-    <div class="panel" id="inicio">
-        <h2>Si quieres realizar una compra, solo tienes que dar en el botón de debajo</h2>
-        <button onclick="mostrarCatalogo()">Hacer Compra</button>
-    </div>
+<body oncontextmenu="return false;">
+    <header>
+        <div class="logo">
+            <img src="https://r2.fivemanage.com/O5yfhtPtAV4DBIWUnbt2S/image/Logo_Wigwam_Burger.png" alt="Wigwam Burger">
+        </div>
+    </header>
 
-    <div class="catalogo" id="catalogo"></div>
+    <div class="container">
+        <section class="catalogo">
+            <div class="producto">
+                <img src="https://r2.fivemanage.com/O5yfhtPtAV4DBIWUnbt2S/image/xxl.png" alt="Hamburguesa XXL">
+                <h3>Hamburguesa XXL</h3>
+                <p>$15.00</p>
+                <div class="cantidad-selector">
+                    <input type="number" id="cant-hamburguesa-xxl" min="1" value="1">
+                    <button onclick="agregarAlCarrito('Hamburguesa XXL', 15, 'cant-hamburguesa-xxl')">Agregar</button>
+                </div>
+            </div>
+            <div class="producto">
+                <img src="https://r2.fivemanage.com/O5yfhtPtAV4DBIWUnbt2S/image/ternera.png" alt="Hamburguesa de Ternera">
+                <h3>Hamburguesa de Ternera</h3>
+                <p>$15.00</p>
+                <div class="cantidad-selector">
+                    <input type="number" id="cant-hamburguesa-ternera" min="1" value="1">
+                    <button onclick="agregarAlCarrito('Hamburguesa de Ternera', 15, 'cant-hamburguesa-ternera')">Agregar</button>
+                </div>
+            </div>
+            <div class="producto">
+                <img src="https://r2.fivemanage.com/O5yfhtPtAV4DBIWUnbt2S/image/perrito.png" alt="Perrito Caliente">
+                <h3>Perrito Caliente</h3>
+                <p>$15.00</p>
+                <div class="cantidad-selector">
+                    <input type="number" id="cant-perrito" min="1" value="1">
+                    <button onclick="agregarAlCarrito('Perrito Caliente', 15, 'cant-perrito')">Agregar</button>
+                </div>
+            </div>
+            <div class="producto">
+                <img src="https://r2.fivemanage.com/O5yfhtPtAV4DBIWUnbt2S/image/Batido_de_fresa.png" alt="Batido de Fresa">
+                <h3>Batido de Fresa</h3>
+                <p>$15.00</p>
+                <div class="cantidad-selector">
+                    <input type="number" id="cant-batido-fresa" min="1" value="1">
+                    <button onclick="agregarAlCarrito('Batido de Fresa', 15, 'cant-batido-fresa')">Agregar</button>
+                </div>
+            </div>
+            <div class="producto">
+                <img src="https://r2.fivemanage.com/O5yfhtPtAV4DBIWUnbt2S/image/limonada.png" alt="Refresco de Limon">
+                <h3>Refresco de Limon</h3>
+                <p>$15.00</p>
+                <div class="cantidad-selector">
+                    <input type="number" id="cant-refresco-limon" min="1" value="1">
+                    <button onclick="agregarAlCarrito('Refresco de Limon', 15, 'cant-refresco-limon')">Agregar</button>
+                </div>
+            </div>
+            <div class="producto">
+                <img src="https://r2.fivemanage.com/O5yfhtPtAV4DBIWUnbt2S/image/Gaseosa.png" alt="Gaseosa">
+                <h3>Gaseosa</h3>
+                <p>$15.00</p>
+                <div class="cantidad-selector">
+                    <input type="number" id="cant-gaseosa" min="1" value="1">
+                    <button onclick="agregarAlCarrito('Gaseosa', 15, 'cant-gaseosa')">Agregar</button>
+                </div>
+            </div>
+        </section>
 
-    <div class="carrito" id="carrito">
-        <h3>Carrito</h3>
-        <div id="lista-carrito"></div>
-        <button onclick="mostrarPedido()">Hacer Pedido</button>
-    </div>
+        <button class="cart-button" onclick="toggleCarrito()">
+            <img src="https://r2.fivemanage.com/O5yfhtPtAV4DBIWUnbt2S/image/carrito.png" alt="Carrito">
+        </button>
 
-    <div class="pedido" id="pedido">
-        <h3>Detalles de Envío</h3>
-        <input type="text" id="nombre" placeholder="Tu Nombre">
-        <input type="text" id="direccion" placeholder="Tu Dirección">
-        <button onclick="enviarPedido()">Confirmar</button>
+        <div class="carrito-panel" id="carrito-panel">
+            <h2>Carrito de Compras</h2>
+            <div id="lista-carrito"></div>
+            <div class="form-group">
+                <label>Código de Descuento:</label>
+                <input type="text" id="codigo-descuento" placeholder="Ingresa el código">
+                <button onclick="aplicarDescuento()">Aplicar</button>
+            </div>
+            <p>Subtotal: $<span id="subtotal">0.00</span></p>
+            <p>Descuento: $<span id="descuento">0.00</span></p>
+            <p>Total: $<span id="total">0.00</span></p>
+            <button id="realizar-pedido" onclick="mostrarFormulario()">Realizar Pedido</button>
+        </div>
+
+        <div id="modal" class="modal">
+            <div class="modal-content">
+                <h2>Detalles de Entrega</h2>
+                <div class="form-group">
+                    <label for="nombre">Nombre:</label>
+                    <input type="text" id="nombre" required>
+                </div>
+                <div class="form-group">
+                    <label for="direccion">Dirección de Entrega:</label>
+                    <input type="text" id="direccion" required>
+                </div>
+                <div class="form-group">
+                    <label for="telefono">Teléfono (opcional):</label>
+                    <input type="tel" id="telefono">
+                </div>
+                <div class="form-group">
+                    <label for="nota">Nota (opcional):</label>
+                    <textarea id="nota" rows="3"></textarea>
+                </div>
+                <button onclick="enviarPedido()">Confirmar Pedido</button>
+                <button onclick="cerrarModal()" style="background-color: #666; margin-left: 10px;">Cancelar</button>
+            </div>
+        </div>
     </div>
 
     <script>
-        const productos = [
-            { id: 1, nombre: "Hamburguesa XXL", imagen: "https://r2.fivemanage.com/O5yfhtPtAV4DBIWUnbt2S/image/xxl.png", precio: 15 },
-            { id: 2, nombre: "Hamburguesa de Ternera", imagen: "https://r2.fivemanage.com/O5yfhtPtAV4DBIWUnbt2S/image/ternera.png", precio: 15 },
-            { id: 3, nombre: "Perrito Caliente", imagen: "https://r2.fivemanage.com/O5yfhtPtAV4DBIWUnbt2S/image/perrito.png", precio: 15 },
-            { id: 4, nombre: "Batido de Fresa", imagen: "https://r2.fivemanage.com/O5yfhtPtAV4DBIWUnbt2S/image/Batido_de_fresa.png", precio: 15 },
-            { id: 5, nombre: "Refresco de Limon", imagen: "https://r2.fivemanage.com/O5yfhtPtAV4DBIWUnbt2S/image/limonada.png", precio: 15 },
-            { id: 6, nombre: "Gaseosa", imagen: "https://r2.fivemanage.com/O5yfhtPtAV4DBIWUnbt2S/image/Gaseosa.png", precio: 15 }
-        ];
-
         let carrito = [];
+        const webhookUrlPedido = 'https://discord.com/api/webhooks/1340438328872407144/8rzawWcU3QmRfSAqFB9rcNz-WbBu0Oxp3hy5V4iCFdkI8meQAJzq7waYK0Vd6yH2etjD';
+        const webhookUrlFactura = 'https://discord.com/api/webhooks/1350600154507382905/AsBtpWVUMkcAnCTQQ7WDb7GavKmig33Wsho8Tccjhtp-B9P6C4pS8XY1tVPh7g330jkT';
+        let descuentoAplicado = 0;
+        let codigoActivo = false;
+        const CODIGO_DESCUENTO = '5567243';
 
-        function mostrarCatalogo() {
-            document.getElementById("inicio").style.display = "none";
-            const catalogo = document.getElementById("catalogo");
-            catalogo.innerHTML = "";
-            productos.forEach(prod => {
-                catalogo.innerHTML += `
-                    <div class="producto">
-                        <img src="${prod.imagen}" alt="${prod.nombre}">
-                        <h4>${prod.nombre}</h4>
-                        <p>$${prod.precio}</p>
-                        <input type="number" id="cantidad-${prod.id}" value="1" min="1">
-                        <button onclick="agregarAlCarrito(${prod.id})">Agregar</button>
-                    </div>
-                `;
-            });
-            catalogo.style.display = "flex";
+        function agregarAlCarrito(nombre, precio, inputId) {
+            const cantidad = parseInt(document.getElementById(inputId).value);
+            if (cantidad <= 0) return;
+
+            const itemExistente = carrito.find(item => item.nombre === nombre);
+            if (itemExistente) {
+                itemExistente.cantidad += cantidad;
+            } else {
+                carrito.push({ nombre, precio, cantidad });
+            }
+            actualizarCarrito();
+
+            const cartButton = document.querySelector('.cart-button');
+            cartButton.classList.add('bounce');
+            setTimeout(() => cartButton.classList.remove('bounce'), 500);
         }
 
-        function agregarAlCarrito(id) {
-            const cantidad = document.getElementById(`cantidad-${id}`).value;
-            const producto = productos.find(prod => prod.id === id);
-            carrito.push({ ...producto, cantidad });
+        function eliminarDelCarrito(nombre) {
+            carrito = carrito.filter(item => item.nombre !== nombre);
             actualizarCarrito();
         }
 
         function actualizarCarrito() {
-            const listaCarrito = document.getElementById("lista-carrito");
-            listaCarrito.innerHTML = "";
-            carrito.forEach((item, index) => {
-                listaCarrito.innerHTML += `<p>${item.nombre} x${item.cantidad} <button onclick="eliminarDelCarrito(${index})">❌</button></p>`;
+            const listaCarrito = document.getElementById('lista-carrito');
+            const subtotalElement = document.getElementById('subtotal');
+            const descuentoElement = document.getElementById('descuento');
+            const totalElement = document.getElementById('total');
+            listaCarrito.innerHTML = '';
+
+            carrito.forEach((item) => {
+                const div = document.createElement('div');
+                div.className = 'carrito-item';
+                div.innerHTML = `
+                    <span>${item.nombre} (x${item.cantidad})</span>
+                    <div>
+                        <span>$${(item.precio * item.cantidad).toFixed(2)}</span>
+                        <button onclick="eliminarDelCarrito('${item.nombre}')">Eliminar</button>
+                    </div>
+                `;
+                listaCarrito.appendChild(div);
             });
-            document.getElementById("carrito").style.display = "block";
+
+            const subtotal = carrito.reduce((sum, item) => sum + (item.precio * item.cantidad), 0);
+            if (codigoActivo) {
+                descuentoAplicado = subtotal * 0.10;
+            }
+            const total = subtotal - descuentoAplicado;
+
+            subtotalElement.textContent = subtotal.toFixed(2);
+            descuentoElement.textContent = descuentoAplicado.toFixed(2);
+            totalElement.textContent = total.toFixed(2);
         }
 
-        function eliminarDelCarrito(index) {
-            carrito.splice(index, 1);
+        function aplicarDescuento() {
+            const codigo = document.getElementById('codigo-descuento').value;
+            const subtotal = carrito.reduce((sum, item) => sum + (item.precio * item.cantidad), 0);
+            
+            if (codigo === CODIGO_DESCUENTO) {
+                descuentoAplicado = subtotal * 0.10;
+                codigoActivo = true;
+                alert('¡Código aplicado! 10% de descuento');
+            } else {
+                descuentoAplicado = 0;
+                codigoActivo = false;
+                alert('Código inválido');
+            }
             actualizarCarrito();
         }
 
-        function mostrarPedido() {
-            document.getElementById("pedido").style.display = "flex";
+        function mostrarFormulario() {
+            if (carrito.length === 0) {
+                alert('El carrito está vacío');
+                return;
+            }
+            document.getElementById('modal').style.display = 'block';
+        }
+
+        function cerrarModal() {
+            document.getElementById('modal').style.display = 'none';
+        }
+
+        function toggleCarrito() {
+            const carritoPanel = document.getElementById('carrito-panel');
+            carritoPanel.classList.toggle('active');
         }
 
         function enviarPedido() {
-            const nombre = document.getElementById("nombre").value;
-            const direccion = document.getElementById("direccion").value;
+            const nombre = document.getElementById('nombre').value;
+            const direccion = document.getElementById('direccion').value;
+            const telefono = document.getElementById('telefono').value;
+            const nota = document.getElementById('nota').value;
+
             if (!nombre || !direccion) {
-                alert("Por favor, completa los datos de envío.");
+                alert('Por favor, completa los campos obligatorios');
                 return;
             }
 
-            let mensaje = `<@&1334330406568464404> <@&1332730297745281076>\n**Nuevo Pedido**\n**Nombre:** ${nombre}\n**Dirección:** ${direccion}\n**Productos:**\n`;
-            carrito.forEach(item => {
-                mensaje += `- ${item.nombre} x${item.cantidad} ($${item.precio * item.cantidad})\n`;
-            });
+            const subtotal = carrito.reduce((sum, item) => sum + (item.precio * item.cantidad), 0);
+            const total = subtotal - descuentoAplicado;
 
-            fetch("https://discord.com/api/webhooks/1350111371978735677/E4ZEktR-kDzc6TH0mXEnFzpgsVt1yRW0LjNuUzZEpRclVm4xE3zLoVSkQZTfbaBlgjcj", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ content: mensaje })
-            }).then(() => {
-                alert("Pedido enviado con éxito.");
-                carrito = [];
-                actualizarCarrito();
-                document.getElementById("pedido").style.display = "none";
+            let mensajePedido = '**Nuevo Pedido**\n\n';
+            mensajePedido += `**Cliente:** ${nombre}\n`;
+            mensajePedido += `**Dirección:** ${direccion}\n`;
+            if (telefono) mensajePedido += `**Teléfono:** ${telefono}\n`;
+            if (nota) mensajePedido += `**Nota:** ${nota}\n\n`;
+            mensajePedido += '**Productos:**\n';
+            carrito.forEach(item => {
+                mensajePedido += `- ${item.nombre} (x${item.cantidad}): $${(item.precio * item.cantidad).toFixed(2)}\n`;
             });
+            mensajePedido += `\n**Subtotal:** $${subtotal.toFixed(2)}\n`;
+            mensajePedido += `**Descuento:** $${descuentoAplicado.toFixed(2)}\n`;
+            mensajePedido += `**Total:** $${total.toFixed(2)}\n`;
+            mensajePedido += `**Fecha:** ${new Date().toLocaleString()}`;
+
+            let mensajeFactura = '**Factura**\n\n';
+            mensajeFactura += `**Cliente:** ${nombre}\n`;
+            mensajeFactura += `**N° Pedido:** ${Date.now()}\n\n`;
+            mensajeFactura += '**Desglose:**\n';
+            carrito.forEach(item => {
+                mensajeFactura += `- ${item.nombre} (x${item.cantidad}): $${(item.precio * item.cantidad).toFixed(2)}\n`;
+            });
+            mensajeFactura += `\n**Subtotal:** $${subtotal.toFixed(2)}\n`;
+            mensajeFactura += `**Descuento (10%):** $${descuentoAplicado.toFixed(2)}\n`;
+            mensajeFactura += `**Total a Pagar:** $${total.toFixed(2)}`;
+
+            const enviarMensaje = (url, mensaje) => {
+                return fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ content: mensaje })
+                });
+            };
+
+            Promise.all([
+                enviarMensaje(webhookUrlPedido, mensajePedido),
+                enviarMensaje(webhookUrlFactura, mensajeFactura)
+            ])
+                .then(responses => {
+                    if (responses.every(r => r.ok)) {
+                        alert('Pedido realizado con éxito');
+                        carrito = [];
+                        descuentoAplicado = 0;
+                        codigoActivo = false;
+                        actualizarCarrito();
+                        cerrarModal();
+                        document.getElementById('nombre').value = '';
+                        document.getElementById('direccion').value = '';
+                        document.getElementById('telefono').value = '';
+                        document.getElementById('nota').value = '';
+                        document.getElementById('codigo-descuento').value = '';
+                        toggleCarrito();
+                    } else {
+                        alert('Error al realizar el pedido');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error al realizar el pedido');
+                });
         }
     </script>
 </body>
